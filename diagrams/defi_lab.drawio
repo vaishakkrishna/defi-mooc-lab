@@ -1,0 +1,44 @@
+<mxfile host="65bd71144e">
+    <diagram name="Page-1" id="5SzA598kw5mOTU8rfwr-">
+        <mxGraphModel dx="817" dy="616" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="aztg6h7eqtqFa_vQDCUI-5" value="LiquidationOperator.operate()" style="swimlane;html=1;fontSize=15;labelBorderColor=none;strokeColor=default;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="32" width="250" height="338" as="geometry"/>
+                </mxCell>
+                <mxCell id="aztg6h7eqtqFa_vQDCUI-8" value="fwef" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;html=1;fontSize=15;labelBorderColor=none;whiteSpace=wrap;" parent="aztg6h7eqtqFa_vQDCUI-5" vertex="1">
+                    <mxGeometry y="23" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="aztg6h7eqtqFa_vQDCUI-10" value="LiquidationOperator.uniswapV2Call(&lt;br style=&quot;font-size: 15px;&quot;&gt;&lt;span style=&quot;font-size: 15px; font-weight: normal; color: rgb(255, 203, 107);&quot;&gt;address&lt;/span&gt;&lt;span style=&quot;color: rgb(191, 199, 213); font-size: 15px; font-weight: normal;&quot;&gt;,&lt;/span&gt;&lt;br style=&quot;font-size: 15px;&quot;&gt;&lt;div style=&quot;color: rgb(191, 199, 213); font-weight: normal; font-size: 15px; line-height: 20px;&quot;&gt;&lt;div style=&quot;font-size: 15px;&quot;&gt;        &lt;span style=&quot;color: rgb(255, 203, 107); font-size: 15px;&quot;&gt;uint256&lt;/span&gt;,&lt;/div&gt;&lt;div style=&quot;font-size: 15px;&quot;&gt;        &lt;span style=&quot;color: rgb(255, 203, 107); font-size: 15px;&quot;&gt;uint256&lt;/span&gt; &lt;span style=&quot;color: rgb(121, 134, 231); font-size: 15px;&quot;&gt;amount1&lt;/span&gt;,&lt;/div&gt;&lt;/div&gt;&lt;span style=&quot;color: rgb(191, 199, 213); font-size: 15px; font-weight: normal;&quot;&gt;        &lt;/span&gt;&lt;span style=&quot;font-size: 15px; font-weight: normal; color: rgb(255, 203, 107);&quot;&gt;bytes&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;font-size: 15px; font-weight: normal; color: rgb(199, 146, 234);&quot;&gt;calldata&lt;/span&gt;)" style="swimlane;html=1;startSize=120;spacingTop=2;spacing=2;spacingLeft=14;spacingBottom=14;spacingRight=14;fontSize=15;labelBorderColor=none;strokeColor=default;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="115" y="410" width="320" height="510" as="geometry"/>
+                </mxCell>
+                <mxCell id="aztg6h7eqtqFa_vQDCUI-11" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;fwef&lt;/b&gt;" style="text;strokeColor=default;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;html=1;fontSize=15;labelBorderColor=none;whiteSpace=wrap;" parent="aztg6h7eqtqFa_vQDCUI-10" vertex="1">
+                    <mxGeometry y="120" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" style="edgeStyle=none;html=1;entryX=-0.004;entryY=0.035;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Courier New;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=15;labelBorderColor=none;strokeColor=default;" edge="1" parent="1" target="aztg6h7eqtqFa_vQDCUI-8">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="539.9999999999998" y="166" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="33" style="edgeStyle=none;html=1;fontFamily=Courier New;fontSize=15;labelBorderColor=none;strokeColor=default;" edge="1" parent="1" target="aztg6h7eqtqFa_vQDCUI-10">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="299.290220820189" y="203" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="LiquidationOperator" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;labelBackgroundColor=none;labelBorderColor=none;strokeColor=default;fontFamily=Courier New;fontSize=15;" vertex="1" parent="1">
+                    <mxGeometry x="180" y="40" width="460" height="136" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="+ health_factor_decimals: public constant uint_8" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Courier New;fontSize=15;" vertex="1" parent="43">
+                    <mxGeometry y="26" width="460" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="+ lending_pool:private ILendingPool " style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Courier New;fontSize=15;" vertex="1" parent="43">
+                    <mxGeometry y="56" width="460" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="+ weth_usd_pair: private IUniswapV2Pair " style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Courier New;fontSize=15;" vertex="1" parent="43">
+                    <mxGeometry y="106" width="460" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

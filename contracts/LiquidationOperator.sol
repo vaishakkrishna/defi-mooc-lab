@@ -134,10 +134,16 @@ interface IUniswapV2Pair {
 
 contract LiquidationOperator is IUniswapV2Callee {
     uint8 public constant health_factor_decimals = 18;
+    address private constant borrower = address(0x59CE4a2AC5bC3f5F225439B2993b86B42f6d3e9F);
+    /// Retrieve LendingPool address
+    ILendingPool lendingPool = ILendingPool(address(0x52D306e36E3B6B02c153d0266ff0f85d18BCD413));
+    // store token addresses
+    IERC20 public constant USDT = IERC20(address(0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852));
+    IWETH public constant WETH = IWETH(address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
+    // store uniswap pair info
+    IUniswapV2Factory public factory = IUniswapV2Factory(address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f));
+    IUniswapV2Pair private pair = IUniswapV2Pair(factory.getPair(address(USDT), address(WETH)));
 
-    // TODO: define constants used in the contract including ERC-20 tokens, Uniswap Pairs, Aave lending pools, etc. */
-    //    *** Your code here ***
-    // END TODO
 
     // some helper function, it is totally fine if you can finish the lab without using these function
     // https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
@@ -179,8 +185,6 @@ contract LiquidationOperator is IUniswapV2Callee {
 
     constructor() {
         // TODO: (optional) initialize your contract
-        //   *** Your code here ***
-        // END TODO
     }
 
     // TODO: add a `receive` function so that you can withdraw your WETH
@@ -192,20 +196,31 @@ contract LiquidationOperator is IUniswapV2Callee {
         // TODO: implement your liquidation logic
 
         // 0. security checks and initializing variables
-        //    *** Your code here ***
+        //    *** Your code here 
 
         // 1. get the target user account data & make sure it is liquidatable
         //    *** Your code here ***
-
+        uint256 totalCollateralETH;
+        uint256 totalDebtETH;
+        uint256 availableBorrowsETH;
+        uint256 currentLiquidationThreshold;
+        uint256 ltv;
+        uint256 healthFactor;
+        (totalCollateralETH, totalDebtETH, availableBorrowsETH, currentLiquidationThreshold, ltv, healthFactor) = lendingPool.getUserAccountData(borrower);
+        require(healthFactor < 1 ether, "HF is not below 1");
+        uint256 amount = totalDebtETH / 2;
         // 2. call flash swap to liquidate the target user
         // based on https://etherscan.io/tx/0xac7df37a43fab1b130318bbb761861b8357650db2e2c6493b73d6da3d9581077
         // we know that the target user borrowed USDT with WBTC as collateral
         // we should borrow USDT, liquidate the target user and get the WBTC, then swap WBTC to repay uniswap
         // (please feel free to develop other workflows as long as they liquidate the target user successfully)
-        //    *** Your code here ***
-
+        // TODO: consider existing balance before swapping
+        uint256 r0;
+        uint256 r1;
+        (r0, r1, ) = pair.getReserves();
+        IWETH(address(this)).transfer(address(pair), getAmountOut(amount, r0, r1));
+        pair.swap(amount, 0, address(this), bytes(""));
         // 3. Convert the profit into ETH and send back to sender
-        //    *** Your code here ***
 
         // END TODO
     }
@@ -220,17 +235,17 @@ contract LiquidationOperator is IUniswapV2Callee {
         // TODO: implement your liquidation logic
 
         // 2.0. security checks and initializing variables
-        //    *** Your code here ***
-
+        uint256 r0;
+        uint256 r1;
+        (r0, r1, ) = pair.getReserves();
         // 2.1 liquidate the target user
         //    *** Your code here ***
 
         // 2.2 swap WBTC for other things or repay directly
-        //    *** Your code here ***
+        
 
         // 2.3 repay
-        //    *** Your code here ***
-        
-        // END TODO
+        IERC20(address(this)).transfer(msg.sender, getAmountIn(amount1, r0, r1));
+
     }
 }
