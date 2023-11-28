@@ -11,7 +11,9 @@ describe("Liquidation", function () {
       method: "hardhat_reset",
       params: [{
         forking: {
-          jsonRpcUrl: process.env.ALCHE_API,
+          jsonRpcUrl: process.env.INFURA_API,
+
+          // jsonRpcUrl: process.env.ALCHE_API,
           blockNumber: 12489619,
         }
       }]

@@ -49,6 +49,26 @@ interface ILendingPool {
             uint256 ltv,
             uint256 healthFactor
         );
+
+    /**
+     * bit 0-15: LTV
+     * bit 16-31: Liq. threshold
+     * bit 32-47: Liq. bonus
+     * bit 48-55: Decimals
+     * bit 56: reserve is active
+     * bit 57: reserve is frozen
+     * bit 58: borrowing is enabled
+     * bit 59: stable rate borrowing enabled
+     * bit 60-63: reserved
+     * bit 64-79: reserve factor
+     */
+    function getConfiguration(address asset)
+        external
+        view
+        returns (
+            uint256 config
+        );
+
 }
 
 // UniswapV2
@@ -88,16 +108,6 @@ interface IUniswapV2Callee {
         uint256 amount0,
         uint256 amount1,
         bytes calldata data
-    ) external;
-}
-
-interface IUniswapV2Router02 {
-    function swapExactTokensForETH(
-        uint amountIn,
-        uint amountOutMin,
-        address[] calldata path,
-        address to,
-        uint deadline
     ) external;
 }
 
@@ -156,11 +166,9 @@ contract LiquidationOperator is IUniswapV2Callee {
     IUniswapV2Factory public factory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
     IUniswapV2Pair private eupair = IUniswapV2Pair(factory.getPair(WETH, USDT));
     IUniswapV2Pair private bepair = IUniswapV2Pair(factory.getPair(WBTC, WETH));
-    IUniswapV2Router02 router = IUniswapV2Router02(address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D));
 
     // IUniswapV2Pair private pair = IUniswapV2Pair(0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852);
     uint256 private constant liquidationAmountUSDT = 2916378221684;
-
     // some helper function, it is totally fine if you can finish the lab without using these function
     // https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
@@ -200,7 +208,6 @@ contract LiquidationOperator is IUniswapV2Callee {
         uint256 denominator = (reserveOut - amountOut) * 997;
         amountIn = (numerator / denominator) + 1;
     }
-
     constructor() {
         // TODO: (optional) initialize your contract
     }
@@ -218,15 +225,18 @@ contract LiquidationOperator is IUniswapV2Callee {
         //    *** Your code here ***
         uint256 totalCollateralETH;
         uint256 totalDebtETH;
-        uint256 availableBorrowsETH;
-        uint256 currentLiquidationThreshold;
-        uint256 ltv;
+        uint256 currentThresh;
+        // uint256 ltv;
         uint256 healthFactor;
 
         
         // console.log(address(this).balance);
-        (totalCollateralETH, totalDebtETH, availableBorrowsETH, currentLiquidationThreshold, ltv, healthFactor) = lendingPool.getUserAccountData(address(borrower));
+        (totalCollateralETH, totalDebtETH, , currentThresh, , healthFactor) = lendingPool.getUserAccountData(address(borrower));
         require(healthFactor / (10**health_factor_decimals) < 1, "HF is not below 1");
+        uint256 spread = (lendingPool.getConfiguration(WETH) & 0xFFFF00000000)>> 32;
+        console.log("Liquidation Spread: ", spread);
+        console.log("Current Threshold: ", currentThresh);
+
         // 2. call flash swap to liquidate the target user
         // based on https://etherscan.io/tx/0xac7df37a43fab1b130318bbb761861b8357650db2e2c6493b73d6da3d9581077
         // we know that the target user borrowed USDT with WBTC as collateral
@@ -240,15 +250,38 @@ contract LiquidationOperator is IUniswapV2Callee {
         console.log(r0, r1);
         console.log("---------- TOTAL DEBT (ETH) ----------");
         console.log(totalDebtETH);
-        uint256 liquidationAmt = liquidationAmountUSDT > r1? r1: liquidationAmountUSDT;
-        console.log("---------- PLANNED REPAYMENT (USDT) ----------");
-        console.log(liquidationAmt);
+        console.log("---------- TOTAL COLLATERAL (ETH) ----------");
+        console.log(totalCollateralETH);
+        // based on this math: r > (D - CT) / (1 + (ST) - T)
+        uint256 liquidationAmt1ETH = (totalDebtETH*10e9 - (totalCollateralETH*currentThresh*10e5))/((10e9 + (spread*currentThresh) - currentThresh*10e5));
+        // buffer for positive hf
+        uint256 liquidationAmt1USDT = getAmountOut(liquidationAmt1ETH, r0, r1);
 
-        eupair.swap(0, liquidationAmt, address(this), abi.encode("fello"));
+        liquidationAmt1USDT = liquidationAmt1USDT > r1? r1: liquidationAmt1USDT;
+
+        console.log("---------- PLANNED REPAYMENT (USDT) ----------");
+        console.log("First Round: ", liquidationAmt1USDT);
+        console.log("OLD HEALTH FACTOR: ", healthFactor);
+        
+        eupair.swap(0, liquidationAmt1USDT, address(this), abi.encode("hi"));
+        (totalCollateralETH, totalDebtETH, , currentThresh, , healthFactor) = lendingPool.getUserAccountData(address(borrower));
+        console.log("NEW HEALTH FACTOR: ", healthFactor);
+        if (healthFactor/(10**health_factor_decimals) < 1) {
+            (r0, r1, ) = eupair.getReserves();
+            // 11 == random constant that worked well
+            uint256 liquidationAmt2USDT = getAmountOut(totalDebtETH/11, r0, r1);
+
+            liquidationAmt2USDT = liquidationAmt2USDT > r1? r1: liquidationAmt2USDT;
+            console.log("SECOND REPAY AMOUNT USD: ", liquidationAmt2USDT);
+
+            eupair.swap(0, liquidationAmt2USDT, address(this), abi.encode("hi"));
+        } 
         // 3. Convert the profit into ETH and send back to sender
         uint256 my_eth = IERC20(WETH).balanceOf(me);
         IWETH(WETH).withdraw(my_eth); 
         msg.sender.call{value: my_eth}("");
+        
+        
     }
     // required by the swap
     function uniswapV2Call(
@@ -265,7 +298,7 @@ contract LiquidationOperator is IUniswapV2Callee {
         (eurWETH, eurUSDT, ) = eupair.getReserves();
         (berWBTC, berWETH, ) = bepair.getReserves();
         // 2.1 liquidate the target user
-        liquidate(liquidationAmountUSDT);
+        liquidate(amount1);
 
         // 2.2 swap WBTC for WETH
         IERC20 WBTC_POOL = IERC20(WBTC);
@@ -284,6 +317,9 @@ contract LiquidationOperator is IUniswapV2Callee {
         // 2.3 repay flash swap
         IERC20 WETH_POOL = IERC20(WETH);
         uint256 repayAmount = getAmountIn(amount1, eurWETH, eurUSDT);
+        console.log("FLASH LOAN REPAY AMOUNT: ", repayAmount);
+        // console.log("FLASH LOAN FEE: ", repayAmount ) - convert(amount1, eurUSDT, eurWETH));
+
         WETH_POOL.approve(address(eupair), repayAmount);
         WETH_POOL.transfer(address(eupair), repayAmount);
         
